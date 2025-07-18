@@ -1,11 +1,10 @@
-import Header2 from "../layout/header2";
-import Footer from "../layout/footer";
+import Navbar from "../components/Navbar";
 import LoginForm from "../components/login-form";
 
 export default function LoginPage() {
   return (
     <div>
-      <Header2 />
+      <Navbar />
       {/* 登录标题 */}
       <section style={{
         background: "#f4faff",
@@ -30,7 +29,6 @@ export default function LoginPage() {
       }}>
         <LoginForm />
       </main>
-      <Footer />
     </div>
   );
 }

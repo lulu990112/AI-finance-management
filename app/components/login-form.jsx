@@ -1,12 +1,56 @@
 "use client";
 import React, { useState } from "react";
+import { useAuth } from "./AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
-  const [success, setSuccess] = useState(false);
+  const [formData, setFormData] = useState({
+    username: "",
+    password: ""
+  });
+  const [error, setError] = useState("");
+  const { login } = useAuth();
+  const router = useRouter();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setSuccess(true);
+    setError("");
+
+    // 简单的验证逻辑
+    if (!formData.username || !formData.password) {
+      setError("请填写用户名和密码");
+      return;
+    }
+
+    // 模拟登录验证（实际项目中应该调用API）
+    if (formData.username === "admin" && formData.password === "123456") {
+      const userData = {
+        id: 1,
+        username: formData.username,
+        email: "admin@example.com",
+        isMember: true
+      };
+      login(userData);
+      router.push("/");
+    } else if (formData.username === "user" && formData.password === "123456") {
+      const userData = {
+        id: 2,
+        username: formData.username,
+        email: "user@example.com",
+        isMember: false
+      };
+      login(userData);
+      router.push("/");
+    } else {
+      setError("用户名或密码错误");
+    }
+  };
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
   return (
@@ -25,26 +69,52 @@ export default function LoginForm() {
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: 18 }}>
           <label style={{ fontWeight: 600, fontSize: 15 }}>User Name <span style={{ color: "#ff4d4f" }}>*</span></label>
-          <input type="text" placeholder="Your Name" style={{
-            width: "100%",
-            padding: "10px 12px",
-            border: "1px solid #e0e0e0",
-            borderRadius: 6,
-            marginTop: 6,
-            fontSize: 15
-          }} required />
+          <input 
+            type="text" 
+            name="username"
+            placeholder="Your Name" 
+            value={formData.username}
+            onChange={handleChange}
+            style={{
+              width: "100%",
+              padding: "10px 12px",
+              border: "1px solid #e0e0e0",
+              borderRadius: 6,
+              marginTop: 6,
+              fontSize: 15
+            }} 
+            required 
+          />
         </div>
         <div style={{ marginBottom: 18 }}>
           <label style={{ fontWeight: 600, fontSize: 15 }}>Password <span style={{ color: "#ff4d4f" }}>*</span></label>
-          <input type="password" placeholder="password" style={{
-            width: "100%",
-            padding: "10px 12px",
-            border: "1px solid #e0e0e0",
-            borderRadius: 6,
-            marginTop: 6,
-            fontSize: 15
-          }} required />
+          <input 
+            type="password" 
+            name="password"
+            placeholder="password" 
+            value={formData.password}
+            onChange={handleChange}
+            style={{
+              width: "100%",
+              padding: "10px 12px",
+              border: "1px solid #e0e0e0",
+              borderRadius: 6,
+              marginTop: 6,
+              fontSize: 15
+            }} 
+            required 
+          />
         </div>
+        {error && (
+          <div style={{
+            color: "#ff4d4f",
+            fontSize: 14,
+            marginBottom: 16,
+            textAlign: "center"
+          }}>
+            {error}
+          </div>
+        )}
         <div style={{
           display: "flex",
           justifyContent: "space-between",
@@ -72,16 +142,11 @@ export default function LoginForm() {
         <div style={{ textAlign: "center", fontSize: 14 }}>
           New User? <a href="/register" style={{ color: "#ff4d4f" }}>Register Now</a>
         </div>
-        {success && (
-          <div style={{
-            marginTop: 16,
-            color: "#52c41a",
-            fontWeight: 600,
-            textAlign: "center"
-          }}>
-            successful
-          </div>
-        )}
+        <div style={{ marginTop: 16, fontSize: 12, color: "#888", textAlign: "center" }}>
+          测试账号：<br />
+          会员账号：admin / 123456<br />
+          普通用户：user / 123456
+        </div>
       </form>
     </div>
   );

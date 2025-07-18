@@ -1,19 +1,68 @@
 "use client";
-import Header2 from "../layout/header2";
-import Footer from "../layout/footer";
+import Navbar from "../components/Navbar";
+import { useAuth } from "../components/AuthContext";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 export default function RegisterPage() {
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const { login } = useAuth();
+  const router = useRouter();
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setError("");
+
+    // 验证逻辑
+    if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
+      setError("请填写所有必填字段");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("两次输入的密码不一致");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError("密码长度至少6位");
+      return;
+    }
+
+    // 模拟注册成功
+    const userData = {
+      id: Date.now(),
+      username: formData.username,
+      email: formData.email,
+      isMember: false
+    };
+    
+    login(userData);
     setSuccess(true);
+    
+    // 2秒后跳转到主页
+    setTimeout(() => {
+      router.push("/");
+    }, 2000);
+  };
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
   return (
     <div>
-      <Header2 />
+      <Navbar />
       {/* 注册标题 */}
       <section style={{
         background: "#f4faff",
@@ -51,48 +100,90 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: 18 }}>
               <label style={{ fontWeight: 600, fontSize: 15 }}>User Name <span style={{ color: "#ff4d4f" }}>*</span></label>
-              <input type="text" placeholder="Your Name" style={{
-                width: "100%",
-                padding: "10px 12px",
-                border: "1px solid #e0e0e0",
-                borderRadius: 6,
-                marginTop: 6,
-                fontSize: 15
-              }} required />
+              <input 
+                type="text" 
+                name="username"
+                placeholder="Your Name" 
+                value={formData.username}
+                onChange={handleChange}
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: 6,
+                  marginTop: 6,
+                  fontSize: 15
+                }} 
+                required 
+              />
             </div>
             <div style={{ marginBottom: 18 }}>
               <label style={{ fontWeight: 600, fontSize: 15 }}>Email <span style={{ color: "#ff4d4f" }}>*</span></label>
-              <input type="email" placeholder="Your Email" style={{
-                width: "100%",
-                padding: "10px 12px",
-                border: "1px solid #e0e0e0",
-                borderRadius: 6,
-                marginTop: 6,
-                fontSize: 15
-              }} required />
+              <input 
+                type="email" 
+                name="email"
+                placeholder="Your Email" 
+                value={formData.email}
+                onChange={handleChange}
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: 6,
+                  marginTop: 6,
+                  fontSize: 15
+                }} 
+                required 
+              />
             </div>
             <div style={{ marginBottom: 18 }}>
               <label style={{ fontWeight: 600, fontSize: 15 }}>Password <span style={{ color: "#ff4d4f" }}>*</span></label>
-              <input type="password" placeholder="Password" style={{
-                width: "100%",
-                padding: "10px 12px",
-                border: "1px solid #e0e0e0",
-                borderRadius: 6,
-                marginTop: 6,
-                fontSize: 15
-              }} required />
+              <input 
+                type="password" 
+                name="password"
+                placeholder="Password" 
+                value={formData.password}
+                onChange={handleChange}
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: 6,
+                  marginTop: 6,
+                  fontSize: 15
+                }} 
+                required 
+              />
             </div>
             <div style={{ marginBottom: 18 }}>
               <label style={{ fontWeight: 600, fontSize: 15 }}>Confirm Password <span style={{ color: "#ff4d4f" }}>*</span></label>
-              <input type="password" placeholder="Confirm Password" style={{
-                width: "100%",
-                padding: "10px 12px",
-                border: "1px solid #e0e0e0",
-                borderRadius: 6,
-                marginTop: 6,
-                fontSize: 15
-              }} required />
+              <input 
+                type="password" 
+                name="confirmPassword"
+                placeholder="Confirm Password" 
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: 6,
+                  marginTop: 6,
+                  fontSize: 15
+                }} 
+                required 
+              />
             </div>
+            {error && (
+              <div style={{
+                color: "#ff4d4f",
+                fontSize: 14,
+                marginBottom: 16,
+                textAlign: "center"
+              }}>
+                {error}
+              </div>
+            )}
             <button type="submit" style={{
               width: "100%",
               background: "#ff4d4f",
@@ -115,13 +206,12 @@ export default function RegisterPage() {
                 fontWeight: 600,
                 textAlign: "center"
               }}>
-                successful
+                注册成功！正在跳转到主页...
               </div>
             )}
           </form>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }
