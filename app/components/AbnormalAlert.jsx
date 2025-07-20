@@ -17,6 +17,19 @@ export default function AbnormalAlert() {
       <div style={{ color: "#444" }}>
         A $200 overseas transaction has been detected, which is inconsistent with your usual spending habits. Please confirm if this was made by you.
       </div>
+      <a href="/ai-report" style={{
+        display: "inline-block",
+        marginTop: 12,
+        background: "#faad14",
+        color: "#fff",
+        borderRadius: 6,
+        padding: "6px 18px",
+        fontWeight: 600,
+        fontSize: 15,
+        textDecoration: "none",
+        boxShadow: "0 1px 4px #ffe08f",
+        transition: "background 0.2s"
+      }}>查看详情</a>
     </div>
   );
 } 
