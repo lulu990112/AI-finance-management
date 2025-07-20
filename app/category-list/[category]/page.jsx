@@ -5,7 +5,7 @@ import Navbar from "../../components/Navbar";
 
 // mock 数据，与 category-dashboard/[category]/page.jsx 保持一致
 const mockData = {
-  餐饮: {
+  eating: {
     total: 1200,
     subcategories: [
       { name: "零食", value: 500, color: "#ff7ca3" },
@@ -18,7 +18,7 @@ const mockData = {
       { id: 3, date: "2024-06-03", subcategory: "正餐", amount: 80, note: "火锅" },
     ]
   },
-  交通: {
+  transportation: {
     total: 800,
     subcategories: [
       { name: "公交", value: 200, color: "#4ecbff" },
