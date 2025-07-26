@@ -4,11 +4,11 @@ import Navbar from "../components/Navbar";
 import Link from "next/link";
 
 const categories = [
-  { name: "餐饮", color: "#ff7ca3", value: 1200 },
-  { name: "交通", color: "#4ecbff", value: 800 },
-  { name: "购物", color: "#ffe08f", value: 600 },
-  { name: "娱乐", color: "#5adbb5", value: 400 },
-  { name: "医疗", color: "#a084e8", value: 200 },
+  { name: "Dining", color: "#ff7ca3", value: 1200 },
+  { name: "Transport", color: "#4ecbff", value: 800 },
+  { name: "Shopping", color: "#ffe08f", value: 600 },
+  { name: "Entertainment", color: "#5adbb5", value: 400 },
+  { name: "Healthcare", color: "#a084e8", value: 200 },
 ];
 
 export default function CategoryListPage() {
@@ -16,7 +16,7 @@ export default function CategoryListPage() {
     <div style={{ background: "#f4faff", minHeight: "100vh" }}>
       <Navbar />
       <div style={{ maxWidth: 900, margin: "0 auto", padding: 32 }}>
-        <h1 style={{ fontSize: 32, fontWeight: 700, marginBottom: 24 }}>类别列表</h1>
+        <h1 style={{ fontSize: 32, fontWeight: 700, marginBottom: 24 }}>Category List</h1>
         <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
           {categories.map(cat => (
             <Link
@@ -40,7 +40,7 @@ export default function CategoryListPage() {
               }}
             >
               <div style={{ marginBottom: 12 }}>{cat.name}</div>
-              <div style={{ color: cat.color, fontSize: 28 }}>{cat.value} 元</div>
+              <div style={{ color: cat.color, fontSize: 28 }}>${cat.value}</div>
             </Link>
           ))}
         </div>

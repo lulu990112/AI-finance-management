@@ -29,7 +29,7 @@ export default function FinancialAdvice() {
         textDecoration: "none",
         boxShadow: "0 1px 4px #e0e0e0",
         transition: "background 0.2s"
-      }}>查看详情</a>
+      }}>View Details</a>
     </div>
   );
 } 

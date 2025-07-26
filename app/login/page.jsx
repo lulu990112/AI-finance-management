@@ -5,7 +5,7 @@ export default function LoginPage() {
   return (
     <div>
       <Navbar />
-      {/* 登录标题hhh */}
+      {/* Login title */}
       <section style={{
         background: "#f4faff",
         padding: "48px 0 32px 0",
@@ -19,7 +19,7 @@ export default function LoginPage() {
           </div>
         </div>
       </section>
-      {/* 登录表单 */}
+      {/* Login form */}
       <main style={{
         display: "flex",
         justifyContent: "center",

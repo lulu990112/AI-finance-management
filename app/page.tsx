@@ -1,5 +1,5 @@
 'use client';
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "./components/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
@@ -13,15 +13,42 @@ import AbnormalAlert from "./components/AbnormalAlert";
 export default function Home() {
   const { user } = useAuth();
   const isMember = user?.isMember || false;
+  const [showGmailSuccess, setShowGmailSuccess] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && localStorage.getItem('gmail_authorized_success')) {
+      setShowGmailSuccess(true);
+      localStorage.removeItem('gmail_authorized_success');
+      setTimeout(() => setShowGmailSuccess(false), 5000);
+    }
+  }, []);
 
   return (
     <ProtectedRoute>
       <div style={{ background: "#fafbfc", minHeight: "100vh" }}>
         <Navbar />
+        {showGmailSuccess && (
+          <div style={{
+            position: 'fixed',
+            top: 30,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: '#52c41a',
+            color: '#fff',
+            padding: '16px 32px',
+            borderRadius: 8,
+            fontWeight: 700,
+            fontSize: 20,
+            zIndex: 9999,
+            boxShadow: '0 2px 12px rgba(0,0,0,0.12)'
+          }}>
+            Success!
+          </div>
+        )}
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 16px 0 16px" }}>
-          {/* 顶部主区块：左欢迎语+卡片，右主按钮 */}
+          {/* Top main block: left welcome + cards, right main button */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 32 }}>
-            {/* 左侧：欢迎语+SummaryCard */}
+            {/* Left: welcome + SummaryCard */}
             <div style={{ flex: 2, minWidth: 340 }}>
               <div style={{ fontWeight: 800, fontSize: 48, marginBottom: 18, lineHeight: 1.1 }}>
                 Welcome back,<br />{isMember ? "valued member" : "regular user"} !
@@ -32,7 +59,7 @@ export default function Home() {
                 <SummaryCard title="Current Balance" icon={<span role="img" aria-label="balance">🧑‍🎤</span>} value="$2,863.76" />
               </div>
             </div>
-            {/* 右侧：主按钮区 */}
+            {/* Right: main button area */}
             <div style={{ flex: 1, minWidth: 260, display: "flex", flexDirection: "column", gap: 24, alignItems: "stretch", marginTop: 12 }}>
               <a href="#" style={{
                 background: "#111",
@@ -57,12 +84,12 @@ export default function Home() {
                   textAlign: "center",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.08)"
                 }}>
-                  普通用户
+                  Regular User
                 </div>
               )}
             </div>
           </div>
-          {/* 会员专属内容 */}
+          {/* Member exclusive content */}
           {isMember && (
             <div style={{ display: "flex", gap: 18, marginTop: 32, flexWrap: "wrap" }}>
               <div style={{ flex: 1, minWidth: 320 }}>
@@ -71,7 +98,7 @@ export default function Home() {
               </div>
             </div>
           )}
-          {/* 下方主内容区 */}
+          {/* Bottom main content area */}
           <div style={{ display: "flex", gap: 48, marginTop: 32, flexWrap: "wrap" }}>
             <div style={{ flex: 1, minWidth: 320 }}>
               <div style={{ fontWeight: 700, fontSize: 28, marginBottom: 18 }}>Expense Categories</div>
@@ -81,11 +108,11 @@ export default function Home() {
               <RecentTransactions />
             </div>
           </div>
-          {/* 用户信息显示 */}
+          {/* User info display */}
           <div style={{ marginTop: 48, textAlign: "center", color: "#666", fontSize: 14 }}>
-            <div>当前用户：{user?.username}</div>
-            <div>用户类型：{isMember ? "会员用户" : "普通用户"}</div>
-            <div>邮箱：{user?.email}</div>
+            <div>Current User: {user?.username}</div>
+            <div>User Type: {isMember ? "Premium Member" : "Regular User"}</div>
+            <div>Email: {user?.email}</div>
           </div>
         </div>
       </div>

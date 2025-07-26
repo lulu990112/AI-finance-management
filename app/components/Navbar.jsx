@@ -56,7 +56,7 @@ export default function Navbar() {
           {user ? (
             <>
               <div style={{ fontSize: 14, color: "#666" }}>
-                欢迎，{user.username}
+                Welcome, {user.username}
               </div>
               <button
                 onClick={handleLogout}
@@ -72,7 +72,7 @@ export default function Navbar() {
                   transition: "all 0.2s"
                 }}
               >
-                登出
+                Logout
               </button>
             </>
           ) : (

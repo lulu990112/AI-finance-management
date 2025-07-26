@@ -29,7 +29,7 @@ export default function AbnormalAlert() {
         textDecoration: "none",
         boxShadow: "0 1px 4px #ffe08f",
         transition: "background 0.2s"
-      }}>查看详情</a>
+      }}>View Details</a>
     </div>
   );
 } 

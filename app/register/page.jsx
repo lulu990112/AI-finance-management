@@ -22,17 +22,17 @@ export default function RegisterPage() {
 
     // 验证逻辑
     if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
-      setError("请填写所有必填字段");
+      setError("Please fill in all required fields");
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError("两次输入的密码不一致");
+      setError("Passwords do not match");
       return;
     }
 
     if (formData.password.length < 6) {
-      setError("密码长度至少6位");
+      setError("Password must be at least 6 characters");
       return;
     }
 
@@ -55,23 +55,23 @@ export default function RegisterPage() {
 
       if (res.ok && data.success) {
         setSuccess(true);
-        login(data.data.user); // 存储登录信息
+        login(data.data.user, data.data.token); // 存储登录信息和token
         setTimeout(() => {
           router.push("/");
         }, 2000);
       } else {
         // 详细显示后端 errors
-        let errorMsg = data.message || "注册失败";
+        let errorMsg = data.message || "Registration failed";
         if (data.errors) {
-          errorMsg += "：";
+          errorMsg += ": ";
           errorMsg += Object.entries(data.errors)
             .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
-            .join("；");
+            .join("; ");
         }
         setError(errorMsg);
       }
     } catch (err) {
-      setError("请求失败：" + err.message);
+      setError("Request failed: " + err.message);
     }
   };
 
@@ -85,7 +85,7 @@ export default function RegisterPage() {
   return (
     <div>
       <Navbar />
-      {/* 注册标题 */}
+      {/* Register title */}
       <section style={{
         background: "#f4faff",
         padding: "48px 0 32px 0",
@@ -99,7 +99,7 @@ export default function RegisterPage() {
           </div>
         </div>
       </section>
-      {/* 注册表单 */}
+      {/* Register form */}
       <main style={{
         display: "flex",
         justifyContent: "center",
@@ -228,7 +228,7 @@ export default function RegisterPage() {
                 fontWeight: 600,
                 textAlign: "center"
               }}>
-                注册成功！正在跳转到主页...
+                Registration successful! Redirecting to homepage...
               </div>
             )}
           </form>

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
-// 近一周 mock 数据
+// Last week mock data
 const mockCategories = [
-  { name: "餐饮", value: 320, color: "#ff7ca3" },
-  { name: "交通", value: 180, color: "#4ecbff" },
-  { name: "购物", value: 120, color: "#ffe08f" },
-  { name: "娱乐", value: 80, color: "#5adbb5" },
+  { name: "Dining", value: 320, color: "#ff7ca3" },
+  { name: "Transport", value: 180, color: "#4ecbff" },
+  { name: "Shopping", value: 120, color: "#ffe08f" },
+  { name: "Entertainment", value: 80, color: "#5adbb5" },
 ];
 const totalAmount = mockCategories.reduce((sum, c) => sum + c.value, 0);
 
@@ -14,7 +14,7 @@ export default function ExpenseChart() {
   const router = useRouter();
   const [activeIndex, setActiveIndex] = useState(null);
 
-  // 计算每个扇区的路径
+  // Calculate path for each sector
   let acc = 0;
   const arcs = mockCategories.map((cat, i) => {
     const start = acc / totalAmount;
@@ -67,11 +67,11 @@ export default function ExpenseChart() {
           }}
         >
           <div style={{ fontWeight: 700, fontSize: 16 }}>{mockCategories[activeIndex].name}</div>
-          <div style={{ color: '#ff7ca3', fontWeight: 600, fontSize: 18 }}>{mockCategories[activeIndex].value} 元</div>
+          <div style={{ color: '#ff7ca3', fontWeight: 600, fontSize: 18 }}>${mockCategories[activeIndex].value}</div>
           <div style={{ color: '#888', fontSize: 14 }}>
             {((mockCategories[activeIndex].value / totalAmount) * 100).toFixed(1)}%
           </div>
-          <div style={{ color: '#aaa', fontSize: 12, marginTop: 4 }}>近一周</div>
+          <div style={{ color: '#aaa', fontSize: 12, marginTop: 4 }}>Last week</div>
         </div>
       )}
     </div>

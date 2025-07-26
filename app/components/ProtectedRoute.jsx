@@ -23,7 +23,7 @@ export default function ProtectedRoute({ children }) {
         fontSize: '18px',
         color: '#666'
       }}>
-        加载中...
+        Loading...
       </div>
     );
   }

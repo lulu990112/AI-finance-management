@@ -16,9 +16,26 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  const login = (userData) => {
+  const login = (userData, token) => {
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
+    if (token) {
+      localStorage.setItem('token', token);
+    }
+    // 检查是否有 Gmail 授权
+    if (!localStorage.getItem('gmail_access_token') && token) {
+      fetch('http://127.0.0.1:8000/api/gmail/auth_url/', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.auth_url) {
+            window.open(data.auth_url, '_blank', 'width=500,height=700');
+          }
+        });
+    }
   };
 
   const logout = () => {

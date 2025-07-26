@@ -28,13 +28,13 @@ export default function LoginForm() {
       const data = await res.json();
   
       if (res.ok && data.success) {
-        login(data.data.user);  // 存储用户信息
+        login(data.data.user, data.data.token);  // 存储用户信息和token
         router.push("/");
       } else {
-        setError(data.message || "用户名或密码错误");
+        setError(data.message || "Invalid username or password");
       }
     } catch (err) {
-      setError("请求失败：" + err.message);
+      setError("Request failed: " + err.message);
     }
   };
   
@@ -136,9 +136,9 @@ export default function LoginForm() {
           New User? <a href="/register" style={{ color: "#ff4d4f" }}>Register Now</a>
         </div>
         <div style={{ marginTop: 16, fontSize: 12, color: "#888", textAlign: "center" }}>
-          测试账号：<br />
-          会员账号：admin / 123456<br />
-          普通用户：user / 123456
+          Test Accounts:<br />
+          Premium Member: admin / 123456<br />
+          Regular User: user / 123456
         </div>
       </form>
     </div>
