@@ -7,3 +7,5 @@ __pycache__/
 .vscode/
 .DS_Store
 .idea/
+db.sqlite3
+myproject/db.sqlite3
