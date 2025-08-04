@@ -1,5 +1,33 @@
 from django.contrib import admin
-from .models import GmailToken, Email
+from .models import GmailToken, Email, Transaction, Category, Subcategory
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ['name', 'created_at']
+    search_fields = ['name']
+    readonly_fields = ['created_at']
+
+@admin.register(Subcategory)
+class SubcategoryAdmin(admin.ModelAdmin):
+    list_display = ['name', 'category', 'color', 'created_at']
+    list_filter = ['category', 'created_at']
+    search_fields = ['name', 'category__name']
+    readonly_fields = ['created_at']
+
+@admin.register(Transaction)
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = ['item_name', 'vendor', 'amount', 'currency', 'category', 'subcategory', 'user', 'transaction_date']
+    list_filter = ['category', 'subcategory', 'currency', 'transaction_date', 'user']
+    search_fields = ['item_name', 'vendor', 'user__username', 'category__name', 'subcategory__name']
+    readonly_fields = ['created_at']
+    date_hierarchy = 'transaction_date'
+    
+    def get_queryset(self, request):
+        """只显示当前用户的交易（如果是普通用户）"""
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(user=request.user)
 
 @admin.register(GmailToken)
 class GmailTokenAdmin(admin.ModelAdmin):
