@@ -17,24 +17,10 @@ export default function LoginForm() {
     setError("");
   
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/login/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(formData)
-      });
-  
-      const data = await res.json();
-  
-      if (res.ok && data.success) {
-        login(data.data.user, data.data.token);  // 存储用户信息和token
-        router.push("/");
-      } else {
-        setError(data.message || "Invalid username or password");
-      }
+      await login(formData.username, formData.password);
+      router.push("/");
     } catch (err) {
-      setError("Request failed: " + err.message);
+      setError(err.message || "登录失败，请重试");
     }
   };
   

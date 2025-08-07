@@ -1,39 +1,82 @@
 import React from "react";
 import Link from "next/link";
-
-const transactions = [
-  {
-    title: "Uber Eats Dinner (Food & Dining)",
-    desc: "Daily Meals",
-    date: "2024-07-14",
-    amount: "-$15.75"
-  },
-  {
-    title: "Amazon Order (Shopping)",
-    desc: "Cosmetics, Skincare Products ect.",
-    date: "2024-07-14",
-    amount: "-$89.99"
-  },
-  {
-    title: "Train Ticket (Transport)",
-    desc: "Transport",
-    date: "2024-07-13",
-    amount: "-$5.50"
-  },
-  {
-    title: "Boots Order (Shopping)",
-    desc: "Skincare Products",
-    date: "2024-07-13",
-    amount: "-$25.00"
-  }
-];
+import { useData } from "../context/DataContext";
+import LoadingSpinner from "./LoadingSpinner";
+import ErrorMessage from "./ErrorMessage";
 
 export default function RecentTransactions() {
+  const { recentTransactions, loading, error } = useData();
+
+  // 格式化交易数据
+  const formatTransaction = (transaction) => {
+    // 调试：打印第一个交易的数据结构
+    if (recentTransactions.length > 0 && recentTransactions[0] === transaction) {
+      console.log('🔍 第一个交易数据结构:', transaction);
+    }
+    
+    return {
+      title: `${transaction.item_name || 'Unknown'} (${transaction.subcategory || 'Other'})`,
+      desc: transaction.vendor || 'No vendor',
+      date: transaction.transaction_date ? new Date(transaction.transaction_date).toISOString().split('T')[0] : 'Unknown date',
+      amount: `-$${parseFloat(transaction.amount || 0).toFixed(2)}`
+    };
+  };
+
+  // 显示加载状态
+  if (loading) {
+    return (
+      <div>
+        <div style={{ fontWeight: 700, fontSize: 26, marginBottom: 18 }}>Recent Transactions</div>
+        <LoadingSpinner size="small" />
+      </div>
+    );
+  }
+
+  // 显示错误状态
+  if (error) {
+    return (
+      <div>
+        <div style={{ fontWeight: 700, fontSize: 26, marginBottom: 18 }}>Recent Transactions</div>
+        <ErrorMessage message={error} onRetry={() => window.location.reload()} />
+      </div>
+    );
+  }
+
+  // 如果没有数据，显示默认数据
+  const displayTransactions = recentTransactions.length > 0 
+    ? recentTransactions.slice(0, 4).map(formatTransaction)
+    : [
+        {
+          title: "Uber Eats Dinner (Food & Dining)",
+          desc: "Daily Meals",
+          date: "2024-07-14",
+          amount: "-$15.75"
+        },
+        {
+          title: "Amazon Order (Shopping)",
+          desc: "Cosmetics, Skincare Products ect.",
+          date: "2024-07-14",
+          amount: "-$89.99"
+        },
+        {
+          title: "Train Ticket (Transport)",
+          desc: "Transport",
+          date: "2024-07-13",
+          amount: "-$5.50"
+        },
+        {
+          title: "Boots Order (Shopping)",
+          desc: "Skincare Products",
+          date: "2024-07-13",
+          amount: "-$25.00"
+        }
+      ];
+
   return (
     <div>
       <div style={{ fontWeight: 700, fontSize: 26, marginBottom: 18 }}>Recent Transactions</div>
       <div>
-        {transactions.map((t, i) => (
+        {displayTransactions.map((t, i) => (
           <div key={i} style={{ marginBottom: 18 }}>
             <div style={{ fontWeight: 600, fontSize: 16 }}>{t.title}</div>
             <div style={{ color: "#888", fontSize: 15 }}>{t.desc}</div>
