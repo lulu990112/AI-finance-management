@@ -2,13 +2,83 @@
 邮件处理工具模块
 """
 
+import json
 import logging
+from datetime import datetime, timedelta
 from django.utils import timezone
 from datetime import timezone as dt_timezone
-from .models import Category, Subcategory, Transaction
+from .models import Category, Subcategory, Transaction, Email, GmailToken
 from .gpt_service import parse_single_email
+import requests
 
 logger = logging.getLogger(__name__)
+
+def build_gmail_query(last_sync_time):
+    """
+    构建Gmail查询参数，用于增量同步
+    
+    Args:
+        last_sync_time: 上次同步时间
+        
+    Returns:
+        str: Gmail查询字符串，如果无上次同步时间则返回None
+    """
+    if not last_sync_time:
+        return None
+    
+    # 转换为Gmail支持的日期格式 YYYY/MM/DD
+    date_str = last_sync_time.strftime('%Y/%m/%d')
+    return f'after:{date_str}'
+
+def get_incremental_sync_params(user, max_results=50):
+    """
+    获取增量同步的API参数
+    
+    Args:
+        user: 用户对象
+        max_results: 最大结果数量
+        
+    Returns:
+        dict: API参数字典
+    """
+    try:
+        gmail_token = GmailToken.objects.get(user=user)
+        last_sync_time = gmail_token.last_sync_time
+        
+        params = {'maxResults': max_results}
+        
+        # 如果有上次同步时间，添加时间过滤
+        if last_sync_time:
+            query = build_gmail_query(last_sync_time)
+            if query:
+                params['q'] = query
+                logger.info(f"使用增量同步，过滤时间: {last_sync_time}")
+        else:
+            logger.info("首次同步，获取最近7天的邮件")
+            # 首次同步，获取最近7天的邮件
+            seven_days_ago = timezone.now() - timedelta(days=7)
+            date_str = seven_days_ago.strftime('%Y/%m/%d')
+            params['q'] = f'after:{date_str}'
+        
+        return params
+    except GmailToken.DoesNotExist:
+        logger.error(f"用户 {user.username} 没有Gmail令牌")
+        return {'maxResults': max_results}
+
+def update_sync_time(user):
+    """
+    更新用户的同步时间
+    
+    Args:
+        user: 用户对象
+    """
+    try:
+        gmail_token = GmailToken.objects.get(user=user)
+        gmail_token.last_sync_time = timezone.now()
+        gmail_token.save()
+        logger.info(f"更新用户 {user.username} 的同步时间为: {gmail_token.last_sync_time}")
+    except GmailToken.DoesNotExist:
+        logger.error(f"用户 {user.username} 没有Gmail令牌")
 
 def create_transaction_from_gpt_result(transaction_data, email, user, dry_run=False):
     """从GPT解析结果创建交易记录"""

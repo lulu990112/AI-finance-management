@@ -9,6 +9,7 @@ class GmailToken(models.Model):
     access_token = models.TextField()
     refresh_token = models.TextField(null=True, blank=True)
     expires_at = models.DateTimeField(null=True, blank=True)
+    last_sync_time = models.DateTimeField(null=True, blank=True)  # 记录上次同步时间
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -33,6 +34,7 @@ class Email(models.Model):
     labels = models.TextField()  # JSON格式存储Gmail标签
     is_processed = models.BooleanField(default=False)  # 标记是否已被GPT处理
     processed_at = models.DateTimeField(null=True, blank=True)  # 处理时间
+    last_sync_time = models.DateTimeField(null=True, blank=True)  # 记录邮件同步时间
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -130,4 +132,63 @@ class Transaction(models.Model):
             'quantity': self.item_quantity,
             'unit_price': float(self.item_unit_price),
             'description': self.item_description
+        }
+
+class AIReport(models.Model):
+    """AI生成的理财报告"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ai_reports')
+    
+    # 报告的三个部分
+    financial_advice_summary = models.TextField()  # 理财建议总结（约50字）
+    abnormal_alert = models.TextField()  # 异常警报（约30字）
+    money_saving_tip = models.TextField()  # 省钱建议（约300字）
+    
+    # 报告元数据
+    report_date = models.DateTimeField(auto_now_add=True)  # 报告生成时间
+    analysis_period = models.CharField(max_length=50)  # 分析周期（如"最近30天"）
+    total_transactions = models.IntegerField()  # 分析的交易总数
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2)  # 总金额
+    
+    # 报告状态
+    is_generated = models.BooleanField(default=False)  # 是否已生成
+    generation_status = models.CharField(max_length=20, default='pending')  # 生成状态：pending, processing, completed, failed
+    
+    # 新增字段：支持半个月报告
+    report_type = models.CharField(max_length=20, default='general', choices=[
+        ('general', '通用报告'),
+        ('biweekly', '半个月报告'),
+        ('monthly', '月度报告'),
+    ])  # 报告类型
+    report_period_start = models.DateField(null=True, blank=True)  # 报告周期开始日期
+    report_period_end = models.DateField(null=True, blank=True)  # 报告周期结束日期
+    period_name = models.CharField(max_length=100, null=True, blank=True)  # 周期名称（如"2024-01-01 to 2024-01-15"）
+    
+    class Meta:
+        db_table = 'ai_report'
+        ordering = ['-report_date']
+        # 确保同一用户的同一周期只有一份报告
+        unique_together = ['user', 'report_type', 'report_period_start', 'report_period_end']
+
+    def __str__(self):
+        if self.report_type == 'biweekly' and self.period_name:
+            return f"Biweekly AI Report for {self.user.username} - {self.period_name}"
+        return f"AI Report for {self.user.username} - {self.report_date.strftime('%Y-%m-%d')}"
+
+    def get_report_data(self):
+        """获取报告数据字典"""
+        return {
+            'id': self.id,
+            'financial_advice_summary': self.financial_advice_summary,
+            'abnormal_alert': self.abnormal_alert,
+            'money_saving_tip': self.money_saving_tip,
+            'report_date': self.report_date.isoformat(),
+            'analysis_period': self.analysis_period,
+            'total_transactions': self.total_transactions,
+            'total_amount': str(self.total_amount),
+            'is_generated': self.is_generated,
+            'generation_status': self.generation_status,
+            'report_type': self.report_type,
+            'report_period_start': self.report_period_start.isoformat() if self.report_period_start else None,
+            'report_period_end': self.report_period_end.isoformat() if self.report_period_end else None,
+            'period_name': self.period_name,
         }

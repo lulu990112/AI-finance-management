@@ -77,18 +77,23 @@ def gmail_callback(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def sync_emails(request):
-    """同步邮件到数据库"""
+    """同步邮件到数据库 - 支持增量同步"""
     user = request.user
     auto_process = request.GET.get('auto_process', 'true').lower() == 'true'
+    max_results = int(request.GET.get('max_results', 50))
     
     try:
         gmail_token = GmailToken.objects.get(user=user)
     except GmailToken.DoesNotExist:
         return Response({'error': 'No Gmail token found for this user'}, status=400)
     
+    # 使用增量同步参数
+    from .email_processing_utils import get_incremental_sync_params, update_sync_time
+    params = get_incremental_sync_params(user, max_results)
+    
     headers = {'Authorization': f'Bearer {gmail_token.access_token}'}
     gmail_api = 'https://gmail.googleapis.com/gmail/v1/users/me/messages'
-    params = {'maxResults': 50}
+    
     r = requests.get(gmail_api, headers=headers, params=params)
     if r.status_code != 200:
         return Response({'error': 'Failed to fetch emails', 'details': r.json()}, status=400)
@@ -134,7 +139,7 @@ def sync_emails(request):
                 except:
                     pass
         
-        # 保存到数据库
+        # 保存到数据库，包含同步时间
         email_obj, created = Email.objects.update_or_create(
             user=user,
             gmail_id=msg['id'],
@@ -147,7 +152,8 @@ def sync_emails(request):
                 'body': body_text,
                 'received_at': received_at,
                 'labels': json.dumps(msg_detail.get('labelIds', [])),
-                'is_read': 'UNREAD' not in msg_detail.get('labelIds', [])
+                'is_read': 'UNREAD' not in msg_detail.get('labelIds', []),
+                'last_sync_time': timezone.now()  # 记录同步时间
             }
         )
         
@@ -163,6 +169,9 @@ def sync_emails(request):
         
         if created:
             newly_created_emails.append(email_obj)
+    
+    # 更新全局同步时间
+    update_sync_time(user)
     
     # 自动处理邮件
     auto_process_result = None
@@ -257,3 +266,85 @@ def get_email_detail(request, email_id):
 def gmail_receipts(request):
     """保持原有API兼容性"""
     return sync_emails(request) 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_sync_stats(request):
+    """获取同步统计信息"""
+    user = request.user
+    
+    try:
+        gmail_token = GmailToken.objects.get(user=user)
+        
+        # 获取统计信息
+        total_emails = Email.objects.filter(user=user).count()
+        processed_emails = Email.objects.filter(user=user, is_processed=True).count()
+        unprocessed_emails = Email.objects.filter(user=user, is_processed=False).count()
+        
+        # 获取最近同步信息
+        last_sync_time = gmail_token.last_sync_time
+        sync_status = "已同步" if last_sync_time else "未同步"
+        
+        # 获取最近7天的同步统计
+        from datetime import timedelta
+        from django.utils import timezone
+        
+        seven_days_ago = timezone.now() - timedelta(days=7)
+        recent_emails = Email.objects.filter(
+            user=user,
+            created_at__gte=seven_days_ago
+        ).count()
+        
+        return Response({
+            'sync_status': sync_status,
+            'last_sync_time': last_sync_time.isoformat() if last_sync_time else None,
+            'total_emails': total_emails,
+            'processed_emails': processed_emails,
+            'unprocessed_emails': unprocessed_emails,
+            'recent_emails_7_days': recent_emails,
+            'processing_rate': f"{processed_emails}/{total_emails}" if total_emails > 0 else "0/0"
+        })
+        
+    except GmailToken.DoesNotExist:
+        return Response({
+            'error': '未找到Gmail认证信息',
+            'sync_status': '未授权',
+            'total_emails': 0,
+            'processed_emails': 0,
+            'unprocessed_emails': 0,
+            'recent_emails_7_days': 0,
+            'processing_rate': '0/0'
+        }, status=400) 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def check_gmail_auth_status(request):
+    """检查用户的Gmail授权状态"""
+    user = request.user
+    
+    try:
+        gmail_token = GmailToken.objects.get(user=user)
+        
+        # 检查token是否过期
+        is_expired = gmail_token.expires_at and gmail_token.expires_at < timezone.now()
+        
+        return Response({
+            'is_authorized': True,
+            'has_valid_token': not is_expired,
+            'last_sync_time': gmail_token.last_sync_time.isoformat() if gmail_token.last_sync_time else None,
+            'access_token_exists': bool(gmail_token.access_token),
+            'token_expires_at': gmail_token.expires_at.isoformat() if gmail_token.expires_at else None,
+            'user_id': user.id,
+            'username': user.username
+        })
+        
+    except GmailToken.DoesNotExist:
+        return Response({
+            'is_authorized': False,
+            'has_valid_token': False,
+            'last_sync_time': None,
+            'access_token_exists': False,
+            'token_expires_at': None,
+            'user_id': user.id,
+            'username': user.username
+        }) 

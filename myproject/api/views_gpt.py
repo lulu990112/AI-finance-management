@@ -168,10 +168,13 @@ def batch_sync_and_process_emails(request):
                 'transactions_created': 0
             }, status=status.HTTP_400_BAD_REQUEST)
         
+        # 使用增量同步参数
+        from .email_processing_utils import get_incremental_sync_params, update_sync_time
+        params = get_incremental_sync_params(user, max_sync_emails)
+        
         # 从Gmail API拉取邮件
         headers = {'Authorization': f'Bearer {gmail_token.access_token}'}
         gmail_api = 'https://gmail.googleapis.com/gmail/v1/users/me/messages'
-        params = {'maxResults': max_sync_emails}
         
         r = requests.get(gmail_api, headers=headers, params=params)
         if r.status_code != 200:
@@ -235,7 +238,7 @@ def batch_sync_and_process_emails(request):
                     except:
                         pass
             
-            # 保存到数据库
+            # 保存到数据库，包含同步时间
             email_obj, created = Email.objects.update_or_create(
                 user=user,
                 gmail_id=msg['id'],
@@ -248,7 +251,8 @@ def batch_sync_and_process_emails(request):
                     'body': body_text,
                     'received_at': received_at,
                     'labels': json.dumps(msg_detail.get('labelIds', [])),
-                    'is_read': 'UNREAD' not in msg_detail.get('labelIds', [])
+                    'is_read': 'UNREAD' not in msg_detail.get('labelIds', []),
+                    'last_sync_time': timezone.now()  # 记录同步时间
                 }
             )
             
@@ -263,6 +267,9 @@ def batch_sync_and_process_emails(request):
             
             if created:
                 newly_created_emails.append(email_obj)
+        
+        # 更新全局同步时间
+        update_sync_time(user)
         
         # 自动处理邮件
         process_results = None

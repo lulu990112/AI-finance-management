@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import GmailToken, Email, Transaction, Category, Subcategory
+from .models import GmailToken, Email, Transaction, Category, Subcategory, AIReport
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -53,3 +53,11 @@ class EmailAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         return qs.filter(user=request.user)
+
+@admin.register(AIReport)
+class AIReportAdmin(admin.ModelAdmin):
+    list_display = ['user', 'report_date', 'analysis_period', 'total_transactions', 'total_amount', 'is_generated', 'generation_status']
+    list_filter = ['is_generated', 'generation_status', 'report_date']
+    search_fields = ['user__username', 'user__email']
+    readonly_fields = ['report_date', 'total_transactions', 'total_amount']
+    ordering = ['-report_date']
