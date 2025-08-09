@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
-import { getAIReport } from "../services/api";
+import { getAIReportList } from "../services/api";
 import { FaArrowLeft, FaLightbulb, FaChartLine } from "react-icons/fa";
 
 export default function MoneySavingTipPage() {
@@ -9,31 +9,34 @@ export default function MoneySavingTipPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchMoneySavingTip = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        console.log('💡 开始获取Money Saving Tip数据...');
-        const report = await getAIReport();
-        
-        if (report) {
-          console.log('✅ 成功获取Money Saving Tip:', report.money_saving_tip);
-          setAiReport(report);
-        } else {
-          console.log('⚠️ 未找到Money Saving Tip数据');
-          setAiReport(null);
-        }
-      } catch (err) {
-        console.error('❌ 获取Money Saving Tip失败:', err);
-        setError('获取Money Saving Tip失败');
+  const fetchMoneySavingTip = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log('💡 开始获取最新的Money Saving Tip数据...');
+      // 获取最新的AI Report（第一页，第一个报告）
+      const reportResponse = await getAIReportList(1, 1);
+      
+      if (reportResponse && reportResponse.reports && reportResponse.reports.length > 0) {
+        const latestReport = reportResponse.reports[0];
+        console.log('✅ 成功获取最新AI Report:', latestReport);
+        console.log('💡 Money Saving Tip:', latestReport.money_saving_tip);
+        setAiReport(latestReport);
+      } else {
+        console.log('⚠️ 未找到最新的AI Report数据');
         setAiReport(null);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (err) {
+      console.error('❌ 获取Money Saving Tip失败:', err);
+      setError('获取Money Saving Tip失败');
+      setAiReport(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchMoneySavingTip();
   }, []);
 
@@ -80,6 +83,25 @@ export default function MoneySavingTipPage() {
           <div style={{ fontSize: 18, opacity: 0.9 }}>
             Personalized financial advice to help you save more and spend smarter
           </div>
+          <button
+            onClick={() => {
+              setLoading(true);
+              fetchMoneySavingTip();
+            }}
+            style={{
+              background: "rgba(255,255,255,0.2)",
+              color: "#fff",
+              border: "1px solid rgba(255,255,255,0.3)",
+              borderRadius: 8,
+              padding: "8px 16px",
+              marginTop: 16,
+              cursor: "pointer",
+              fontSize: 14,
+              fontWeight: 600
+            }}
+          >
+            🔄 刷新最新建议
+          </button>
         </div>
 
         {/* Error display */}
@@ -213,11 +235,25 @@ export default function MoneySavingTipPage() {
           color: "#666",
           fontSize: 14
         }}>
-          <p>Generated on {aiReport?.report_date ? new Date(aiReport.report_date).toLocaleDateString() : 'Today'}</p>
-          <p>Analysis period: {aiReport?.analysis_period || 'Last 30 days'}</p>
+          {aiReport ? (
+            <>
+              <p>📊 报告ID: {aiReport.id}</p>
+              <p>📅 生成时间: {aiReport.report_date ? new Date(aiReport.report_date).toLocaleDateString() : '未知'}</p>
+              <p>⏱️ 分析周期: {aiReport.analysis_period || '最近30天'}</p>
+              <p>💡 数据来源: 最新AI财务报告</p>
+            </>
+          ) : (
+            <>
+              <p>📅 生成时间: Today</p>
+              <p>⏱️ 分析周期: Last 30 days</p>
+              <p>⚠️ 当前显示默认建议</p>
+            </>
+          )}
         </div>
       </div>
     </div>
   );
 }
+
+
 

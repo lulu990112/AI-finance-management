@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getAIReport } from "../services/api";
+import { getAIReportList } from "../services/api";
 
 export default function AbnormalAlert() {
   const [alertData, setAlertData] = useState(null);
@@ -13,18 +13,26 @@ export default function AbnormalAlert() {
         setError(null);
         
         console.log('🚨 开始获取异常警告数据...');
-        const aiReport = await getAIReport();
+        // 使用报告列表接口，获取第一页数据，取第一个（最新的）报告
+        const response = await getAIReportList(1, 1);
         
-        if (aiReport && aiReport.abnormal_alert) {
-          console.log('✅ 成功获取异常警告:', aiReport.abnormal_alert);
-          setAlertData(aiReport.abnormal_alert);
+        if (response && response.reports && response.reports.length > 0) {
+          const latestReport = response.reports[0];
+          console.log('✅ 成功获取最新报告:', latestReport);
+          
+          if (latestReport.abnormal_alert) {
+            setAlertData(latestReport.abnormal_alert);
+          } else {
+            console.log('⚠️ 最新报告中没有异常警告数据');
+            setAlertData(null);
+          }
         } else {
-          console.log('⚠️ 未找到异常警告数据，使用默认内容');
+          console.log('⚠️ 未找到报告数据，使用默认内容');
           setAlertData(null);
         }
       } catch (err) {
         console.error('❌ 获取异常警告失败:', err);
-        if (err.message.includes('认证失败')) {
+        if (err.message && err.message.includes('认证失败')) {
           setError('认证失败，请重新登录');
         } else {
           setError('获取异常警告失败');

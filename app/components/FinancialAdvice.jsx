@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getAIReport } from "../services/api";
+import { getAIReportList } from "../services/api";
 
 export default function FinancialAdvice() {
   const [adviceData, setAdviceData] = useState(null);
@@ -13,18 +13,26 @@ export default function FinancialAdvice() {
         setError(null);
         
         console.log('🤖 开始获取财务建议数据...');
-        const aiReport = await getAIReport();
+        // 使用报告列表接口，获取第一页数据，取第一个（最新的）报告
+        const response = await getAIReportList(1, 1);
         
-        if (aiReport && aiReport.financial_advice_summary) {
-          console.log('✅ 成功获取财务建议:', aiReport.financial_advice_summary);
-          setAdviceData(aiReport.financial_advice_summary);
+        if (response && response.reports && response.reports.length > 0) {
+          const latestReport = response.reports[0];
+          console.log('✅ 成功获取最新报告:', latestReport);
+          
+          if (latestReport.financial_advice_summary) {
+            setAdviceData(latestReport.financial_advice_summary);
+          } else {
+            console.log('⚠️ 最新报告中没有财务建议数据');
+            setAdviceData(null);
+          }
         } else {
-          console.log('⚠️ 未找到财务建议数据，使用默认内容');
+          console.log('⚠️ 未找到报告数据，使用默认内容');
           setAdviceData(null);
         }
       } catch (err) {
         console.error('❌ 获取财务建议失败:', err);
-        if (err.message.includes('认证失败')) {
+        if (err.message && err.message.includes('认证失败')) {
           setError('认证失败，请重新登录');
         } else {
           setError('获取财务建议失败');

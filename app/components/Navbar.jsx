@@ -48,8 +48,8 @@ export default function Navbar() {
             fontSize: 16
           }}>
             <li><a href="/">Home</a></li>
-            <li><a href="#">Page</a></li>
-            <li><a href="#">Page</a></li>
+            <li><a href="/trend-dashboard">Trend</a></li>
+            <li><a href="/category-list">Transaction</a></li>
           </ul>
         </nav>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>

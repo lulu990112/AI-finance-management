@@ -620,11 +620,29 @@ export const getAIReportDetail = async (reportId) => {
     console.log(`🤖 开始获取AI Report详情 (ID: ${reportId})...`);
     const response = await apiRequest(`/api/ai_report/reports/${reportId}/`);
     
-    if (response && response.id) {
-      console.log('✅ 成功获取AI Report详情:', response);
-      return response;
+    console.log('🔍 后端返回的原始数据:', response);
+    console.log('🔍 数据类型:', typeof response);
+    
+    // 检查嵌套结构
+    let reportData = null;
+    if (response && response.report && Object.keys(response.report).length > 0) {
+      // 数据在 report 字段中
+      reportData = response.report;
+      console.log('🔍 从report字段获取数据:', reportData);
+    } else if (response && response.id) {
+      // 数据直接在根级别
+      reportData = response;
+      console.log('🔍 从根级别获取数据:', reportData);
     } else {
-      console.log('⚠️ 未找到AI Report详情');
+      console.log('⚠️ 未找到有效的报告数据');
+      return null;
+    }
+    
+    if (reportData && reportData.id) {
+      console.log('✅ 成功获取AI Report详情:', reportData);
+      return reportData;
+    } else {
+      console.log('⚠️ 报告数据缺少id字段:', reportData);
       return null;
     }
   } catch (error) {

@@ -38,8 +38,9 @@ export default function LoginForm() {
       borderRadius: 12,
       boxShadow: "0 4px 32px rgba(0,0,0,0.06)",
       padding: "48px 40px",
-      width: 400,
-      maxWidth: "90%"
+      width: "100%",
+      maxWidth: "450px",
+      margin: "0 auto"
     }}>
       <h2 style={{ fontWeight: 700, fontSize: 24, marginBottom: 8 }}>Login From Here</h2>
       <div style={{ color: "#888", marginBottom: 24, fontSize: 15 }}>

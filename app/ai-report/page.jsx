@@ -1,12 +1,14 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "../components/Navbar";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, BarChart, Bar } from "recharts";
 import { FaExclamationTriangle, FaCheckCircle } from "react-icons/fa";
-import { getAIReport } from "../services/api";
+import { getAIReportList } from "../services/api";
 import { getAllTransactions } from "../services/api";
 
 export default function AIReportPage() {
+  const router = useRouter();
   const [aiReport, setAiReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -41,58 +43,56 @@ export default function AIReportPage() {
     return subcategories;
   };
 
-  // 处理周消费数据，按周一到周日分组
+  // 处理周消费数据，按最近7天分组
   const processWeeklyData = (transactions) => {
     if (!transactions || transactions.length === 0) {
       return null;
     }
 
-    // 获取最近一周的日期范围
+    // 获取最近7天的日期范围
     const today = new Date();
     const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay() + 1); // 设置为本周一
+    
+    // 计算最近7天的起始日期（今天往前推6天）
+    startOfWeek.setDate(today.getDate() - 6);
     startOfWeek.setHours(0, 0, 0, 0);
     
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6); // 设置为本周日
+    const endOfWeek = new Date(today);
     endOfWeek.setHours(23, 59, 59, 999);
 
-    console.log('📅 周数据范围:', startOfWeek.toISOString(), '到', endOfWeek.toISOString());
+    console.log('📅 最近7天数据范围:', startOfWeek.toISOString(), '到', endOfWeek.toISOString());
+    console.log('📅 今天是:', today.toDateString(), '星期', ['日', '一', '二', '三', '四', '五', '六'][today.getDay()]);
 
-    // 按天分组交易数据
-    const dailyMap = {
-      'Mon': 0,
-      'Tue': 0,
-      'Wed': 0,
-      'Thu': 0,
-      'Fri': 0,
-      'Sat': 0,
-      'Sun': 0
-    };
+    // 按天分组交易数据 - 最近7天的动态日期
+    const dailyMap = {};
+    
+    // 生成最近7天的日期映射
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startOfWeek);
+      date.setDate(startOfWeek.getDate() + i);
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' }); // Mon, Tue, Wed, etc.
+      dailyMap[dayName] = 0;
+    }
 
-    // 过滤最近一周的交易
+    // 过滤最近7天的交易
     const weeklyTransactions = transactions.filter(tx => {
       const txDate = new Date(tx.transaction_date);
       return txDate >= startOfWeek && txDate <= endOfWeek;
     });
 
-    console.log('📊 本周交易数量:', weeklyTransactions.length);
+    console.log('📊 最近7天交易数量:', weeklyTransactions.length);
 
-    // 按天计算消费金额
+    // 按天计算消费金额 - 使用动态日期映射
     weeklyTransactions.forEach(tx => {
       const txDate = new Date(tx.transaction_date);
-      const dayOfWeek = txDate.getDay(); // 0=周日, 1=周一, ..., 6=周六
-      
-      // 转换为我们的格式 (Mon, Tue, Wed, Thu, Fri, Sat, Sun)
-      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const dayName = dayNames[dayOfWeek];
+      const dayName = txDate.toLocaleDateString('en-US', { weekday: 'short' }); // Mon, Tue, Wed, etc.
       
       if (dailyMap.hasOwnProperty(dayName)) {
         dailyMap[dayName] += parseFloat(tx.amount || 0);
       }
     });
 
-    // 转换为数组格式
+    // 转换为数组格式，按最近7天的顺序排列
     const weeklyData = Object.entries(dailyMap).map(([day, value]) => ({
       day,
       value: Math.round(value * 100) / 100 // 保留两位小数
@@ -142,13 +142,22 @@ export default function AIReportPage() {
         console.log('🤖 开始获取数据...');
         
         // 并行获取AI Report和交易数据
-        const [report, transactions] = await Promise.all([
-          getAIReport(),
+        // 使用报告列表接口，获取第一页数据，取第一个（最新的）报告
+        const [reportResponse, transactions] = await Promise.all([
+          getAIReportList(1, 1),
           getAllTransactions()
         ]);
         
+        // 从报告列表响应中提取最新报告
+        let report = null;
+        if (reportResponse && reportResponse.reports && reportResponse.reports.length > 0) {
+          report = reportResponse.reports[0];
+          console.log('✅ 成功获取最新AI Report:', report);
+        } else {
+          console.log('⚠️ 未找到AI Report数据');
+        }
+        
         if (report) {
-          console.log('✅ 成功获取AI Report:', report);
           setAiReport(report);
           
           // 基于AI Report数据生成actionable items
@@ -167,7 +176,6 @@ export default function AIReportPage() {
           
           setActions(actionableItems);
         } else {
-          console.log('⚠️ 未找到AI Report数据');
           setAiReport(null);
           setActions([]);
         }
@@ -298,11 +306,30 @@ export default function AIReportPage() {
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 8px 48px 8px" }}>
         {/* Top global summary */}
         <div style={{ background: "linear-gradient(90deg,#e0f7fa,#f7fafd 80%)", borderRadius: 16, padding: "28px 32px", marginBottom: 28, display: "flex", alignItems: "center", boxShadow: "0 2px 12px #e0e0e0" }}>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <span style={{ fontSize: 22, fontWeight: 700, color: "#222", marginRight: 18 }}>Financial Health Summary</span>
-            <span style={{ fontSize: 18, color: "#4ecbff", fontWeight: 600 }}>
-              {loading ? "正在加载..." : error ? "加载失败" : aiReport ? aiReport.financial_advice_summary || defaultSummaryText : defaultSummaryText}
-            </span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <span style={{ fontSize: 22, fontWeight: 700, color: "#222", marginRight: 18 }}>Financial Health Summary</span>
+              <span style={{ fontSize: 18, color: "#4ecbff", fontWeight: 600 }}>
+                {loading ? "正在加载..." : error ? "加载失败" : aiReport ? aiReport.financial_advice_summary || defaultSummaryText : defaultSummaryText}
+              </span>
+            </div>
+            <button
+              onClick={() => router.push('/ai-report-list')}
+              style={{
+                background: "#4ecbff",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+                padding: "8px 24px",
+                fontSize: 15,
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "background 0.2s",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+              }}
+            >
+              View Report
+            </button>
           </div>
         </div>
 

@@ -11,10 +11,25 @@ export default function LoginPage() {
         padding: "48px 0 32px 0",
         borderBottom: "1px solid #f0f0f0"
       }}>
-        <div className="container">
-          <h1 style={{ fontSize: 36, fontWeight: 700, margin: 0 }}>Login</h1>
-          <div style={{ color: "#888", marginTop: 8 }}>LULU, your personal AI financial assistant</div>
-          <div style={{ float: "right", color: "#ff4d4f", marginTop: -32 }}>
+        <div style={{
+          maxWidth: "1200px",
+          margin: "0 auto",
+          padding: "0 20px",
+          position: "relative"
+        }}>
+          <div style={{
+            textAlign: "center",
+            marginBottom: "20px"
+          }}>
+            <h1 style={{ fontSize: 36, fontWeight: 700, margin: 0 }}>Login</h1>
+            <div style={{ color: "#888", marginTop: 8 }}>LULU, your personal AI financial assistant</div>
+          </div>
+          <div style={{ 
+            position: "absolute", 
+            top: "20px", 
+            right: "20px", 
+            color: "#ff4d4f" 
+          }}>
             Home - <span style={{ color: "#ff4d4f" }}>Login</span>
           </div>
         </div>
@@ -24,10 +39,19 @@ export default function LoginPage() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        minHeight: "60vh",
-        background: "transparent"
+        minHeight: "70vh",
+        background: "transparent",
+        padding: "0 20px"
       }}>
-        <LoginForm />
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          width: "100%",
+          maxWidth: "500px"
+        }}>
+          <LoginForm />
+        </div>
       </main>
     </div>
   );
