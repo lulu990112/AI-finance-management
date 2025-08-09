@@ -174,3 +174,6 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING('有报告生成失败，请检查日志'))
         else:
             self.stdout.write(self.style.SUCCESS('所有报告生成完成'))
+
+
+

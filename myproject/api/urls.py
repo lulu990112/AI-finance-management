@@ -3,7 +3,7 @@ from .views import hello_world
 from .views_auth import register, login
 from .views_gmail import gmail_auth_url, gmail_callback, gmail_receipts, sync_emails, get_user_emails, get_email_detail, check_gmail_auth_status
 from .views_gpt import get_unprocessed_emails, get_categories, get_transactions, get_processing_stats, batch_sync_and_process_emails
-from .views_ai_report import generate_ai_report, get_ai_reports, get_latest_ai_report, delete_ai_report, get_ai_report_stats, get_biweekly_reports, get_latest_biweekly_report, get_biweekly_report_by_period, generate_biweekly_report
+from .views_ai_report import get_ai_report_detail, get_ai_reports, get_latest_ai_report, get_biweekly_reports, get_latest_biweekly_report, get_biweekly_report_by_period, generate_biweekly_report
 
 urlpatterns = [
     path('hello/', hello_world),
@@ -26,11 +26,9 @@ urlpatterns = [
     # 批量同步和处理邮件
     path('gpt/batch_sync_and_process/', batch_sync_and_process_emails, name='batch_sync_and_process_emails'),
     # AI Report相关路由
-    path('ai_report/generate/', generate_ai_report, name='generate_ai_report'),
+    path('ai_report/reports/<int:report_id>/', get_ai_report_detail, name='get_ai_report_detail'),
     path('ai_report/reports/', get_ai_reports, name='get_ai_reports'),
     path('ai_report/latest/', get_latest_ai_report, name='get_latest_ai_report'),
-    path('ai_report/delete/<int:report_id>/', delete_ai_report, name='delete_ai_report'),
-    path('ai_report/stats/', get_ai_report_stats, name='get_ai_report_stats'),
     # 半个月报告相关路由
     path('ai_report/biweekly/', get_biweekly_reports, name='get_biweekly_reports'),
     path('ai_report/biweekly/latest/', get_latest_biweekly_report, name='get_latest_biweekly_report'),

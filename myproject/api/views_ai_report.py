@@ -9,43 +9,32 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-@api_view(['POST'])
+
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def generate_ai_report(request):
-    """生成AI理财报告"""
+def get_ai_report_detail(request, report_id):
+    """获取单个AI报告详情"""
     try:
-        # 获取分析周期参数
-        analysis_period_days = int(request.data.get('analysis_period_days', 30))
-        
-        # 检查是否已有最近的报告
-        recent_report = AIReport.objects.filter(
+        report = AIReport.objects.get(
+            id=report_id,
             user=request.user,
-            is_generated=True,
-            generation_status='completed'
-        ).order_by('-report_date').first()
-        
-        # 如果最近7天内有报告，直接返回
-        if recent_report and (timezone.now() - recent_report.report_date).days < 7:
-            return Response({
-                'message': 'Using existing recent report',
-                'report': recent_report.get_report_data(),
-                'is_cached': True
-            })
-        
-        # 生成新报告
-        generator = AIReportGenerator()
-        report = generator.generate_report(request.user, analysis_period_days)
+            is_generated=True
+        )
         
         return Response({
-            'message': 'AI report generated successfully',
-            'report': report.get_report_data(),
-            'is_cached': False
+            'message': 'AI report retrieved successfully',
+            'report': report.get_report_data()
         })
         
-    except Exception as e:
-        logger.error(f"生成AI报告失败: {str(e)}")
+    except AIReport.DoesNotExist:
         return Response({
-            'error': 'Failed to generate AI report',
+            'error': 'AI report not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+        
+    except Exception as e:
+        logger.error(f"获取AI报告详情失败: {str(e)}")
+        return Response({
+            'error': 'Failed to get AI report detail',
             'details': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -287,71 +276,4 @@ def generate_biweekly_report(request):
             'details': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
-def delete_ai_report(request, report_id):
-    """删除指定的AI报告"""
-    try:
-        report = AIReport.objects.get(
-            id=report_id,
-            user=request.user
-        )
-        report.delete()
-        
-        return Response({
-            'message': 'AI report deleted successfully'
-        })
-        
-    except AIReport.DoesNotExist:
-        return Response({
-            'error': 'AI report not found'
-        }, status=status.HTTP_404_NOT_FOUND)
-        
-    except Exception as e:
-        logger.error(f"删除AI报告失败: {str(e)}")
-        return Response({
-            'error': 'Failed to delete AI report',
-            'details': str(e)
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_ai_report_stats(request):
-    """获取AI报告统计信息"""
-    try:
-        user_reports = AIReport.objects.filter(user=request.user)
-        
-        stats = {
-            'total_reports': user_reports.count(),
-            'completed_reports': user_reports.filter(generation_status='completed').count(),
-            'failed_reports': user_reports.filter(generation_status='failed').count(),
-            'latest_report_date': None,
-            'average_transactions_per_report': 0,
-            'total_amount_analyzed': 0,
-            'biweekly_reports': user_reports.filter(report_type='biweekly').count(),
-            'general_reports': user_reports.filter(report_type='general').count(),
-            'monthly_reports': user_reports.filter(report_type='monthly').count()
-        }
-        
-        if user_reports.exists():
-            latest_report = user_reports.order_by('-report_date').first()
-            stats['latest_report_date'] = latest_report.report_date.isoformat()
-            
-            # 计算平均交易数和总金额
-            total_transactions = sum(report.total_transactions for report in user_reports)
-            total_amount = sum(float(report.total_amount) for report in user_reports)
-            
-            stats['average_transactions_per_report'] = total_transactions / stats['total_reports']
-            stats['total_amount_analyzed'] = total_amount
-        
-        return Response({
-            'message': 'AI report stats retrieved successfully',
-            'stats': stats
-        })
-        
-    except Exception as e:
-        logger.error(f"获取AI报告统计失败: {str(e)}")
-        return Response({
-            'error': 'Failed to get AI report stats',
-            'details': str(e)
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
+ 
