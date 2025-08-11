@@ -74,7 +74,7 @@ export default function CategoryListPage() {
         {loading && (
           <div style={{ textAlign: "center", padding: "40px" }}>
             <LoadingSpinner size="large" />
-            <div style={{ marginTop: 16, color: "#666" }}>正在加载分类数据...</div>
+            <div style={{ marginTop: 16, color: "#666" }}>Loading...</div>
           </div>
         )}
         

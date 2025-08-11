@@ -17,13 +17,13 @@ export default function AIReportPage() {
   const [realTransactionData, setRealTransactionData] = useState(null);
   const [weeklyData, setWeeklyData] = useState(null);
 
-  // 处理真实交易数据，按subcategory分类
+  // Process real transaction data by subcategory
   const processTransactionData = (transactions) => {
     if (!transactions || transactions.length === 0) {
       return null;
     }
 
-    // 按subcategory分组并计算金额
+    // Group by subcategory and calculate amounts
     const subcategoryMap = {};
     transactions.forEach(tx => {
       const subcategoryName = typeof tx.subcategory === 'object' ? tx.subcategory.name : tx.subcategory;
@@ -33,40 +33,40 @@ export default function AIReportPage() {
       subcategoryMap[subcategoryName] += parseFloat(tx.amount || 0);
     });
 
-    // 转换为数组格式
+    // Convert to array format
     const subcategories = Object.entries(subcategoryMap).map(([name, value]) => ({
       name,
-      value: Math.round(value * 100) / 100, // 保留两位小数
+      value: Math.round(value * 100) / 100, // Keep 2 decimal places
       color: getDefaultSubcategoryColor(name)
     }));
 
     return subcategories;
   };
 
-  // 处理周消费数据，按最近7天分组
+  // Process weekly spending data by last 7 days
   const processWeeklyData = (transactions) => {
     if (!transactions || transactions.length === 0) {
       return null;
     }
 
-    // 获取最近7天的日期范围
+    // Get date range for last 7 days
     const today = new Date();
     const startOfWeek = new Date(today);
     
-    // 计算最近7天的起始日期（今天往前推6天）
+    // Calculate start date for last 7 days (6 days before today)
     startOfWeek.setDate(today.getDate() - 6);
     startOfWeek.setHours(0, 0, 0, 0);
     
     const endOfWeek = new Date(today);
     endOfWeek.setHours(23, 59, 59, 999);
 
-    console.log('📅 最近7天数据范围:', startOfWeek.toISOString(), '到', endOfWeek.toISOString());
-    console.log('📅 今天是:', today.toDateString(), '星期', ['日', '一', '二', '三', '四', '五', '六'][today.getDay()]);
+    console.log('📅 Last 7 days data range:', startOfWeek.toISOString(), 'to', endOfWeek.toISOString());
+    console.log('📅 Today is:', today.toDateString(), 'Day', ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][today.getDay()]);
 
-    // 按天分组交易数据 - 最近7天的动态日期
+    // Group transaction data by day - dynamic dates for last 7 days
     const dailyMap = {};
     
-    // 生成最近7天的日期映射
+    // Generate date mapping for last 7 days
     for (let i = 0; i < 7; i++) {
       const date = new Date(startOfWeek);
       date.setDate(startOfWeek.getDate() + i);
@@ -74,15 +74,15 @@ export default function AIReportPage() {
       dailyMap[dayName] = 0;
     }
 
-    // 过滤最近7天的交易
+    // Filter transactions for last 7 days
     const weeklyTransactions = transactions.filter(tx => {
       const txDate = new Date(tx.transaction_date);
       return txDate >= startOfWeek && txDate <= endOfWeek;
     });
 
-    console.log('📊 最近7天交易数量:', weeklyTransactions.length);
+    console.log('📊 Last 7 days transaction count:', weeklyTransactions.length);
 
-    // 按天计算消费金额 - 使用动态日期映射
+    // Calculate daily spending amount - using dynamic date mapping
     weeklyTransactions.forEach(tx => {
       const txDate = new Date(tx.transaction_date);
       const dayName = txDate.toLocaleDateString('en-US', { weekday: 'short' }); // Mon, Tue, Wed, etc.
@@ -92,20 +92,20 @@ export default function AIReportPage() {
       }
     });
 
-    // 转换为数组格式，按最近7天的顺序排列
+    // Convert to array format, arranged by last 7 days order
     const weeklyData = Object.entries(dailyMap).map(([day, value]) => ({
       day,
-      value: Math.round(value * 100) / 100 // 保留两位小数
+      value: Math.round(value * 100) / 100 // Keep 2 decimal places
     }));
 
-    console.log('📊 周消费数据:', weeklyData);
+    console.log('📊 Weekly spending data:', weeklyData);
     return weeklyData;
   };
 
-  // 获取默认颜色
+  // Get default colors
   const getDefaultSubcategoryColor = (subcategoryName) => {
     const colorMap = {
-      // Needs (黑色subcategory)
+      // Needs (black subcategory)
       'Daily meal': '#4ecbff',
       'Snack': '#ffe08f',
       'Restaurant': '#faad14',
@@ -119,7 +119,7 @@ export default function AIReportPage() {
       'Plane': '#4ecbff',
       'User defined': '#666666',
       
-      // Wants (红色subcategory)
+      // Wants (red subcategory)
       'Clothing': '#ff7ca3',
       'Shoes': '#ff7ca3',
       'Electronics': '#4ecbff',
@@ -139,28 +139,28 @@ export default function AIReportPage() {
         setLoading(true);
         setError(null);
         
-        console.log('🤖 开始获取数据...');
+        console.log('🤖 Starting to fetch data...');
         
-        // 并行获取AI Report和交易数据
-        // 使用报告列表接口，获取第一页数据，取第一个（最新的）报告
+        // Fetch AI Report and transaction data in parallel
+        // Use report list API, get first page data, take the first (latest) report
         const [reportResponse, transactions] = await Promise.all([
           getAIReportList(1, 1),
           getAllTransactions()
         ]);
         
-        // 从报告列表响应中提取最新报告
+        // Extract latest report from report list response
         let report = null;
         if (reportResponse && reportResponse.reports && reportResponse.reports.length > 0) {
           report = reportResponse.reports[0];
-          console.log('✅ 成功获取最新AI Report:', report);
+          console.log('✅ Successfully got latest AI Report:', report);
         } else {
-          console.log('⚠️ 未找到AI Report数据');
+          console.log('⚠️ No AI Report data found');
         }
         
         if (report) {
           setAiReport(report);
           
-          // 基于AI Report数据生成actionable items
+          // Generate actionable items based on AI Report data
           const actionableItems = [];
           
           if (report.abnormal_alert) {
@@ -180,23 +180,23 @@ export default function AIReportPage() {
           setActions([]);
         }
 
-        // 处理真实交易数据
+        // Process real transaction data
         if (transactions && transactions.length > 0) {
-          console.log('✅ 成功获取交易数据:', transactions.length, '条');
+          console.log('✅ Successfully got transaction data:', transactions.length, 'items');
           const processedData = processTransactionData(transactions);
           setRealTransactionData(processedData);
           
-          // 处理周消费数据
+          // Process weekly spending data
           const weeklyData = processWeeklyData(transactions);
           setWeeklyData(weeklyData);
         } else {
-          console.log('⚠️ 未找到交易数据，使用默认数据');
+          console.log('⚠️ No transaction data found, using default data');
           setRealTransactionData(null);
           setWeeklyData(null);
         }
       } catch (err) {
-        console.error('❌ 获取数据失败:', err);
-        setError('获取数据失败');
+        console.error('❌ Failed to get data:', err);
+        setError('Failed to get data');
         setAiReport(null);
         setActions([]);
         setRealTransactionData(null);
@@ -213,7 +213,7 @@ export default function AIReportPage() {
     setActions(prev => prev.map(item => item.id === id ? { ...item, status: "done", actionType } : item));
   };
 
-  // 默认数据（当API数据不可用时）
+  // Default data (when API data is unavailable)
   const defaultSummaryText = "Hello! This is your financial summary. Your total expenses are being analyzed. Please wait for the AI report to be generated.";
   
   const defaultLineData = [
@@ -234,26 +234,26 @@ export default function AIReportPage() {
     { day: "Sun", value: 120 }
   ];
 
-  // Category mapping - 根据表格重新分类
+  // Category mapping - reclassify according to table
   const detailMap = {
     Needs: [
-      // 黑色subcategory (needs)
+      // Black subcategory (needs)
       "Daily meal", "Snack", "Restaurant", "Drink", 
       "Medicine", "Medical", 
       "Bus", "Train", "Taxi", "Subway", "Plane",
       "User defined"
     ],
     Wants: [
-      // 红色subcategory (wants) 
+      // Red subcategory (wants) 
       "Clothing", "Shoes", "Electronics", "Household", "Cosmetic",
       "Game", "Movie", "KTV"
     ]
   };
 
-  // 使用真实交易数据或默认数据
+  // Use real transaction data or default data
   const allSubcategories = realTransactionData || [
-    // 默认数据（当API数据不可用时）
-    // Needs (黑色subcategory)
+    // Default data (when API data is unavailable)
+    // Needs (black subcategory)
     { name: "Daily meal", value: 400, color: "#4ecbff" },
     { name: "Snack", value: 300, color: "#ffe08f" },
     { name: "Restaurant", value: 350, color: "#faad14" },
@@ -267,7 +267,7 @@ export default function AIReportPage() {
     { name: "Plane", value: 500, color: "#4ecbff" },
     { name: "User defined", value: 100, color: "#666666" },
     
-    // Wants (红色subcategory)
+    // Wants (red subcategory)
     { name: "Clothing", value: 800, color: "#ff7ca3" },
     { name: "Shoes", value: 400, color: "#ff7ca3" },
     { name: "Electronics", value: 600, color: "#4ecbff" },
@@ -278,7 +278,7 @@ export default function AIReportPage() {
     { name: "KTV", value: 100, color: "#a084e8" }
   ];
 
-  // 计算needs和wants的总金额
+  // Calculate total amounts for needs and wants
   const needsTotal = allSubcategories
     .filter(item => detailMap.Needs.includes(item.name))
     .reduce((sum, item) => sum + item.value, 0);
@@ -296,7 +296,7 @@ export default function AIReportPage() {
     { name: "Wants", value: wantsPercentage, color: "#ff7ca3" }
   ];
 
-  // Category grouping - 使用真实数据或默认数据
+  // Category grouping - use real data or default data
   const needList = allSubcategories.filter(s => detailMap["Needs"].includes(s.name));
   const wantList = allSubcategories.filter(s => detailMap["Wants"].includes(s.name));
 
@@ -305,18 +305,18 @@ export default function AIReportPage() {
       <Navbar />
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 8px 48px 8px" }}>
         {/* Top global summary */}
-        <div style={{ background: "linear-gradient(90deg,#e0f7fa,#f7fafd 80%)", borderRadius: 16, padding: "28px 32px", marginBottom: 28, display: "flex", alignItems: "center", boxShadow: "0 2px 12px #e0e0e0" }}>
+        <div style={{ background: "linear-gradient(90deg,#f5f5f5,#e8e8e8 80%)", borderRadius: 16, padding: "28px 32px", marginBottom: 28, display: "flex", alignItems: "center", boxShadow: "0 2px 12px #e0e0e0" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
             <div style={{ display: "flex", alignItems: "center" }}>
               <span style={{ fontSize: 22, fontWeight: 700, color: "#222", marginRight: 18 }}>Financial Health Summary</span>
-              <span style={{ fontSize: 18, color: "#4ecbff", fontWeight: 600 }}>
-                {loading ? "正在加载..." : error ? "加载失败" : aiReport ? aiReport.financial_advice_summary || defaultSummaryText : defaultSummaryText}
+              <span style={{ fontSize: 18, color: "#111", fontWeight: 600 }}>
+                {loading ? "Loading..." : error ? "Failed to load" : aiReport ? aiReport.financial_advice_summary || defaultSummaryText : defaultSummaryText}
               </span>
             </div>
             <button
               onClick={() => router.push('/ai-report-list')}
               style={{
-                background: "#4ecbff",
+                background: "#111",
                 color: "#fff",
                 border: "none",
                 borderRadius: 8,
@@ -403,9 +403,9 @@ export default function AIReportPage() {
             </div>
             <div style={{ color: "#888", fontSize: 15, textAlign: "center", marginTop: 6 }}>
               {aiReport?.donut_summary || `${needsPercentage}% of your expenses this month are for necessities, your financial structure is ${needsPercentage >= 60 ? 'quite healthy' : 'needs improvement'}!`}
-              {realTransactionData && <span style={{ fontSize: 12, color: "#4ecbff", marginLeft: 8 }}>(实时数据)</span>}
+
             </div>
-            <div style={{ marginTop: 10, color: "#4ecbff", fontSize: 15, cursor: "pointer" }} onClick={()=>setShowDetail(true)}>View Detailed Categories</div>
+            <div style={{ marginTop: 10, color: "#111", fontSize: 15, cursor: "pointer" }} onClick={()=>setShowDetail(true)}>View Detailed Categories</div>
           </div>
           {/* Card B: AI Financial Guidance */}
           <div style={{ background: "linear-gradient(120deg,#f7fafd 60%,#e6f7ff 100%)", borderRadius: 16, boxShadow: "0 2px 16px #e0e0e0", padding: 28, display: "flex", flexDirection: "column", alignItems: "center", minHeight: 340 }}>
@@ -464,13 +464,13 @@ export default function AIReportPage() {
             </div>
             <div style={{ color: "#888", fontSize: 15, textAlign: "center", marginTop: 6 }}>
               {aiReport?.bar_summary || "Data shows that most of your shopping and entertainment expenses are concentrated on Friday evenings."}
-              {weeklyData && <span style={{ fontSize: 12, color: "#4ecbff", marginLeft: 8 }}>(实时数据)</span>}
+
             </div>
           </div>
         </div>
         {/* Refresh and sync prompt */}
         <div style={{ marginTop: 36, textAlign: "center", color: "#aaa", fontSize: 15 }}>
-          <button style={{ background: "#4ecbff", color: "#fff", border: "none", borderRadius: 8, padding: "8px 28px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginRight: 18 }}>Manual Refresh</button>
+          <button style={{ background: "#111", color: "#fff", border: "none", borderRadius: 8, padding: "8px 28px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginRight: 18 }}>Manual Refresh</button>
           Data synced: 5 minutes ago
         </div>
         {/* Detailed category popup */}
@@ -483,7 +483,7 @@ export default function AIReportPage() {
               <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 18, color: "#222" }}>Detailed Categories</div>
               <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: 18, color: "#4ecbff", marginBottom: 10 }}>
+                  <div style={{ fontWeight: 700, fontSize: 18, color: "#111", marginBottom: 10 }}>
                     Needs
                     <span style={{ fontSize: 14, color: "#666", marginLeft: 8, fontWeight: 400 }}>
                       Total: ${needsTotal}
@@ -492,8 +492,8 @@ export default function AIReportPage() {
                   <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                     {needList.map(sub => (
                       <li key={sub.name} style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
-                        <span style={{ display: "inline-block", minWidth: 80, fontWeight: 600, color: "#4ecbff", background: "#4ecbff22", borderRadius: 8, padding: "4px 14px", marginRight: 14 }}>{sub.name}</span>
-                        <span style={{ fontWeight: 700, color: "#4ecbff", fontSize: 16 }}>${sub.value}</span>
+                        <span style={{ display: "inline-block", minWidth: 80, fontWeight: 600, color: "#111", background: "#111122", borderRadius: 8, padding: "4px 14px", marginRight: 14 }}>{sub.name}</span>
+                        <span style={{ fontWeight: 700, color: "#111", fontSize: 16 }}>${sub.value}</span>
                       </li>
                     ))}
                   </ul>
@@ -530,7 +530,7 @@ export default function AIReportPage() {
                 </div>
               </div>
               <div style={{ textAlign: "center", marginTop: 24 }}>
-                <button onClick={()=>setShowDetail(false)} style={{ background: "#4ecbff", color: "#fff", border: "none", borderRadius: 8, padding: "8px 32px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Close</button>
+                <button onClick={()=>setShowDetail(false)} style={{ background: "#111", color: "#fff", border: "none", borderRadius: 8, padding: "8px 32px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Close</button>
               </div>
             </div>
           </div>

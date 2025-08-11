@@ -50,6 +50,7 @@ export default function Navbar() {
             <li><a href="/">Home</a></li>
             <li><a href="/trend-dashboard">Trend</a></li>
             <li><a href="/category-list">Transaction</a></li>
+            <li><a href="/groups">Groups</a></li>
           </ul>
         </nav>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>

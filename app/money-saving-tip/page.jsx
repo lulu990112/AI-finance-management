@@ -14,22 +14,22 @@ export default function MoneySavingTipPage() {
       setLoading(true);
       setError(null);
       
-      console.log('💡 开始获取最新的Money Saving Tip数据...');
-      // 获取最新的AI Report（第一页，第一个报告）
+      console.log('💡 Starting to fetch latest Money Saving Tip data...');
+      // Get latest AI Report (first page, first report)
       const reportResponse = await getAIReportList(1, 1);
       
       if (reportResponse && reportResponse.reports && reportResponse.reports.length > 0) {
         const latestReport = reportResponse.reports[0];
-        console.log('✅ 成功获取最新AI Report:', latestReport);
+        console.log('✅ Successfully got latest AI Report:', latestReport);
         console.log('💡 Money Saving Tip:', latestReport.money_saving_tip);
         setAiReport(latestReport);
       } else {
-        console.log('⚠️ 未找到最新的AI Report数据');
+        console.log('⚠️ No latest AI Report data found');
         setAiReport(null);
       }
     } catch (err) {
-      console.error('❌ 获取Money Saving Tip失败:', err);
-      setError('获取Money Saving Tip失败');
+      console.error('❌ Failed to get Money Saving Tip:', err);
+      setError('Failed to get Money Saving Tip');
       setAiReport(null);
     } finally {
       setLoading(false);
@@ -40,7 +40,7 @@ export default function MoneySavingTipPage() {
     fetchMoneySavingTip();
   }, []);
 
-  // 默认内容
+  // Default content
   const defaultTip = "To save money while still enjoying entertainment, consider exploring alternative and cost-effective activities such as outdoor picnics, movie nights at home, or utilizing subscription services for music and movies. Setting a monthly entertainment budget can also help in managing expenses and prioritizing savings goals.";
 
   return (
@@ -100,7 +100,7 @@ export default function MoneySavingTipPage() {
               fontWeight: 600
             }}
           >
-            🔄 刷新最新建议
+            🔄 Refresh Latest Tips
           </button>
         </div>
 
@@ -128,7 +128,7 @@ export default function MoneySavingTipPage() {
         }}>
           {loading ? (
             <div style={{ textAlign: "center", padding: "40px" }}>
-              <div style={{ fontSize: 18, color: "#666" }}>正在加载省钱建议...</div>
+              <div style={{ fontSize: 18, color: "#666" }}>Loading...</div>
             </div>
           ) : (
             <>
@@ -237,16 +237,16 @@ export default function MoneySavingTipPage() {
         }}>
           {aiReport ? (
             <>
-              <p>📊 报告ID: {aiReport.id}</p>
-              <p>📅 生成时间: {aiReport.report_date ? new Date(aiReport.report_date).toLocaleDateString() : '未知'}</p>
-              <p>⏱️ 分析周期: {aiReport.analysis_period || '最近30天'}</p>
-              <p>💡 数据来源: 最新AI财务报告</p>
+                             <p>📊 Report ID: {aiReport.id}</p>
+               <p>📅 Generated: {aiReport.report_date ? new Date(aiReport.report_date).toLocaleDateString() : 'Unknown'}</p>
+               <p>⏱️ Analysis Period: {aiReport.analysis_period || 'Last 30 days'}</p>
+               <p>💡 Data Source: Latest AI Financial Report</p>
             </>
           ) : (
             <>
-              <p>📅 生成时间: Today</p>
-              <p>⏱️ 分析周期: Last 30 days</p>
-              <p>⚠️ 当前显示默认建议</p>
+                             <p>📅 Generated: Today</p>
+               <p>⏱️ Analysis Period: Last 30 days</p>
+                             <p>⚠️ Currently showing default tips</p>
             </>
           )}
         </div>

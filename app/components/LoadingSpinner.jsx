@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function LoadingSpinner({ size = "medium", text = "加载中..." }) {
+export default function LoadingSpinner({ size = "medium", text = "Loading..." }) {
   const spinnerSize = {
     small: 16,
     medium: 24,

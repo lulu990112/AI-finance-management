@@ -155,7 +155,7 @@ export default function ExpenseChart() {
           borderRadius: '8px',
           zIndex: 5
         }}>
-          <div style={{ color: '#666', fontSize: 14 }}>加载中...</div>
+                          <div style={{ color: '#666', fontSize: 14 }}>Loading...</div>
         </div>
       )}
       <svg width={240} height={240} viewBox="0 0 200 200">

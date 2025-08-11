@@ -11,10 +11,12 @@ import ValidDate from "./components/ValidDate";
 import FinancialAdvice from "./components/FinancialAdvice";
 import AbnormalAlert from "./components/AbnormalAlert";
 import { syncGmailReceipts, getGmailAuthStatus, getAllTransactions } from "./services/api";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const { user } = useAuth();
   const { refreshAllData } = useData();
+  const router = useRouter();
   const isMember = user?.isMember || false; // 从user对象中获取isMember状态
   const [showGmailSuccess, setShowGmailSuccess] = useState(false);
   const [syncLoading, setSyncLoading] = useState(false);
@@ -131,6 +133,11 @@ export default function Home() {
     }
   };
 
+  // 处理Groups按钮点击
+  const handleGroupsClick = () => {
+    router.push('/groups');
+  };
+
   return (
     <ProtectedRoute>
       <div style={{ background: "#fafbfc", minHeight: "100vh" }}>
@@ -186,7 +193,7 @@ export default function Home() {
               </div>
             </div>
             {/* Right: main button area */}
-            <div style={{ flex: 1, minWidth: 260, display: "flex", flexDirection: "column", gap: 24, alignItems: "stretch", marginTop: 12 }}>
+            <div style={{ flex: 1, minWidth: 260, display: "flex", flexDirection: "column", gap: 16, alignItems: "stretch", marginTop: 12 }}>
               <button 
                 onClick={handleSyncGmail}
                 disabled={syncLoading}
@@ -194,9 +201,9 @@ export default function Home() {
                   background: syncLoading ? "#666" : "#111",
                   color: "#fff",
                   borderRadius: 8,
-                  padding: "18px 32px",
+                  padding: "16px 24px",
                   fontWeight: 700,
-                  fontSize: 20,
+                  fontSize: 18,
                   border: "none",
                   cursor: syncLoading ? "not-allowed" : "pointer",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
@@ -211,15 +218,33 @@ export default function Home() {
                   background: "#111",
                   color: "#fff",
                   borderRadius: 8,
-                  padding: "18px 32px",
+                  padding: "16px 24px",
                   fontWeight: 700,
-                  fontSize: 20,
+                  fontSize: 18,
                   textAlign: "center",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.08)"
                 }}>
                   Regular User
                 </div>
               )}
+              <button 
+                onClick={handleGroupsClick}
+                style={{
+                  background: "#111",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "16px 24px",
+                  fontWeight: 700,
+                  fontSize: 18,
+                  border: "none",
+                  cursor: "pointer",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                  textAlign: "center",
+                  transition: "background-color 0.2s"
+                }}
+              >
+                Groups
+              </button>
             </div>
           </div>
           {/* Member exclusive content */}

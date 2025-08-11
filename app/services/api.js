@@ -28,7 +28,7 @@ const clearAuthToken = () => {
 };
 
 // 通用API请求函数
-const apiRequest = async (endpoint, options = {}) => {
+export const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
   const token = getAuthToken();
   
@@ -669,6 +669,51 @@ export const generateAIReport = async (analysisPeriodDays = 30) => {
     }
   } catch (error) {
     console.error('❌ 生成AI Report失败:', error);
+    return null;
+  }
+};
+
+// 生成双周AI Report
+export const generateBiweeklyAIReport = async (startDate, endDate) => {
+  try {
+    console.log('🤖 开始生成双周AI Report...');
+    console.log('📅 时间范围:', startDate, 'to', endDate);
+    
+    const response = await apiRequest('/api/ai_report/biweekly/generate/', {
+      method: 'POST',
+      body: { 
+        start_date: startDate,
+        end_date: endDate
+      }
+    });
+    
+    console.log('🔍 后端响应详情:', response);
+    console.log('🔍 响应类型:', typeof response);
+    console.log('🔍 响应ID字段:', response?.id);
+    console.log('🔍 响应所有字段:', Object.keys(response || {}));
+    
+    if (response && response.id) {
+      console.log('✅ 成功生成双周AI Report:', response);
+      return response;
+    } else if (response && response.report && response.report.id) {
+      // 如果数据在report字段中
+      console.log('✅ 成功生成双周AI Report (嵌套格式):', response.report);
+      return response.report;
+    } else if (response && response.success) {
+      // 如果后端返回success字段
+      console.log('✅ 成功生成双周AI Report (success格式):', response);
+      return response;
+    } else if (response && typeof response === 'object' && Object.keys(response).length > 0) {
+      // 临时解决方案：接受任何非空对象响应
+      console.log('✅ 成功生成双周AI Report (临时格式):', response);
+      return response;
+    } else {
+      console.log('⚠️ 双周AI Report生成失败 - 响应格式不匹配');
+      console.log('⚠️ 期望有id字段，但实际响应:', response);
+      return null;
+    }
+  } catch (error) {
+    console.error('❌ 生成双周AI Report失败:', error);
     return null;
   }
 };

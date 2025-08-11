@@ -61,11 +61,11 @@ export default function FinancialAdvice() {
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 600, fontSize: 16, marginBottom: 6 }}>
         <span role="img" aria-label="advice">🌐</span> Financial Advice for This Week
-        {loading && <span style={{ fontSize: 12, color: "#666", marginLeft: 8 }}>(加载中...)</span>}
+        {loading && <span style={{ fontSize: 12, color: "#666", marginLeft: 8 }}>(Loading...)</span>}
       </div>
       <div style={{ color: "#444" }}>
         {loading ? (
-          <div style={{ color: "#666", fontStyle: "italic" }}>正在加载财务建议...</div>
+                      <div style={{ color: "#666", fontStyle: "italic" }}>Loading...</div>
         ) : error ? (
           <div style={{ color: "#ff4d4f" }}>{error}</div>
         ) : adviceData ? (

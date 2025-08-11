@@ -218,7 +218,7 @@ export default function TrendDashboard() {
               textAlign: "center",
               color: "#666"
             }}>
-              正在加载消费趋势数据...
+              Loading...
             </div>
           )}
           

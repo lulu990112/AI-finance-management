@@ -14,14 +14,14 @@ export default function AIReportDetail({ params }) {
   const [reportId, setReportId] = useState(null);
 
   useEffect(() => {
-    // 处理params Promise
+    // Handle params Promise
     const handleParams = async () => {
       try {
         const resolvedParams = await params;
         setReportId(resolvedParams.id);
       } catch (error) {
-        console.error('解析params失败:', error);
-        setError('页面参数错误');
+        console.error('Failed to parse params:', error);
+        setError('Page parameter error');
       }
     };
     
@@ -41,11 +41,11 @@ export default function AIReportDetail({ params }) {
       if (data) {
         setReport(data);
       } else {
-        setError('未找到报告数据');
+        setError('Report data not found');
       }
     } catch (err) {
-      setError('获取报告详情失败');
-      console.error('获取报告详情失败:', err);
+      setError('Failed to get report details');
+      console.error('Failed to get report details:', err);
     } finally {
       setLoading(false);
     }
@@ -58,8 +58,8 @@ export default function AIReportDetail({ params }) {
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5' }}>
       <Navbar />
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 24px' }}>
-        {/* 返回按钮 */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px' }}>
+        {/* Back button */}
         <button
           onClick={handleBack}
           style={{
@@ -71,10 +71,11 @@ export default function AIReportDetail({ params }) {
             color: '#666',
             cursor: 'pointer',
             marginBottom: 24,
-            padding: 0
+            padding: 0,
+            fontSize: '14px'
           }}
         >
-          <FaArrowLeft /> 返回报告列表
+          <FaArrowLeft /> Back to Report List
         </button>
 
         {loading ? (
@@ -93,78 +94,181 @@ export default function AIReportDetail({ params }) {
           </div>
         ) : report ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            {/* 标题 */}
-            <div style={{ marginBottom: 16 }}>
-              <h1 style={{ fontSize: 28, fontWeight: 600, color: '#111' }}>
+            {/* Title and basic information */}
+            <div style={{ 
+              background: '#fff', 
+              borderRadius: '8px', 
+              padding: '24px', 
+              marginBottom: '24px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}>
+              <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#222', margin: '0 0 8px 0' }}>
                 AI Financial Report
               </h1>
-              <p style={{ color: '#666', marginTop: 8 }}>
-                分析期间: {report.period_name}
+              <p style={{ color: '#666', margin: 0, fontSize: '16px' }}>
+                Analysis Period: {report.period_name}
               </p>
             </div>
 
             {/* Financial Advice Summary */}
             <div style={{
               background: '#fff',
-              borderRadius: 16,
-              padding: 32,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+              borderRadius: '8px',
+              padding: '24px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              border: '1px solid #e6f7ff',
+              borderLeft: '4px solid #1890ff'
             }}>
-              <h2 style={{ fontSize: 20, fontWeight: 600, color: '#111', marginBottom: 16 }}>
+              <h2 style={{ 
+                fontSize: '20px', 
+                fontWeight: '600', 
+                color: '#222', 
+                margin: '0 0 16px 0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span style={{ 
+                  width: '4px', 
+                  height: '20px', 
+                  background: '#1890ff', 
+                  borderRadius: '2px' 
+                }}></span>
                 Financial Advice Summary
               </h2>
-              <p style={{ color: '#333', lineHeight: 1.6 }}>
+              <div style={{ 
+                color: '#333', 
+                lineHeight: '1.6',
+                fontSize: '15px',
+                padding: '16px',
+                background: '#f8f9fa',
+                borderRadius: '6px',
+                border: '1px solid #e6f7ff'
+              }}>
                 {report.financial_advice_summary}
-              </p>
+              </div>
             </div>
 
             {/* Abnormal Alert */}
             <div style={{
               background: '#fff',
-              borderRadius: 16,
-              padding: 32,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+              borderRadius: '8px',
+              padding: '24px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              border: '1px solid #fff2f0',
+              borderLeft: '4px solid #ff4d4f'
             }}>
-              <h2 style={{ fontSize: 20, fontWeight: 600, color: '#111', marginBottom: 16 }}>
+              <h2 style={{ 
+                fontSize: '20px', 
+                fontWeight: '600', 
+                color: '#222', 
+                margin: '0 0 16px 0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span style={{ 
+                  width: '4px', 
+                  height: '20px', 
+                  background: '#ff4d4f', 
+                  borderRadius: '2px' 
+                }}></span>
                 Abnormal Alert
               </h2>
-              <p style={{ color: '#333', lineHeight: 1.6 }}>
+              <div style={{ 
+                color: '#333', 
+                lineHeight: '1.6',
+                fontSize: '15px',
+                padding: '16px',
+                background: '#fff2f0',
+                borderRadius: '6px',
+                border: '1px solid #ffccc7'
+              }}>
                 {report.abnormal_alert}
-              </p>
+              </div>
             </div>
 
             {/* Money Saving Tips */}
             <div style={{
               background: '#fff',
-              borderRadius: 16,
-              padding: 32,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+              borderRadius: '8px',
+              padding: '24px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              border: '1px solid #f6ffed',
+              borderLeft: '4px solid #52c41a'
             }}>
-              <h2 style={{ fontSize: 20, fontWeight: 600, color: '#111', marginBottom: 16 }}>
+              <h2 style={{ 
+                fontSize: '20px', 
+                fontWeight: '600', 
+                color: '#222', 
+                margin: '0 0 16px 0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span style={{ 
+                  width: '4px', 
+                  height: '20px', 
+                  background: '#52c41a', 
+                  borderRadius: '2px' 
+                }}></span>
                 Money Saving Tips
               </h2>
-              <p style={{ color: '#333', lineHeight: 1.6, whiteSpace: 'pre-line' }}>
+              <div style={{ 
+                color: '#333', 
+                lineHeight: '1.6',
+                fontSize: '15px',
+                padding: '16px',
+                background: '#f6ffed',
+                borderRadius: '6px',
+                border: '1px solid #b7eb8f',
+                whiteSpace: 'pre-line'
+              }}>
                 {report.money_saving_tip}
-              </p>
+              </div>
             </div>
 
-            {/* 报告元数据 */}
+            {/* Report metadata */}
             <div style={{
               background: '#fff',
-              borderRadius: 16,
-              padding: 24,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-              marginTop: 8
+              borderRadius: '8px',
+              padding: '20px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              border: '1px solid #f0f0f0'
             }}>
-              <div style={{ display: 'flex', gap: 32, color: '#666' }}>
-                <div>
-                  <strong>总交易笔数:</strong> {report.total_transactions}
+              <div style={{ 
+                display: 'flex', 
+                gap: '32px', 
+                color: '#666',
+                fontSize: '14px',
+                flexWrap: 'wrap'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ 
+                    width: '8px', 
+                    height: '8px', 
+                    background: '#1890ff', 
+                    borderRadius: '50%' 
+                  }}></span>
+                  <strong>Total Transactions:</strong> {report.total_transactions}
                 </div>
-                <div>
-                  <strong>总金额:</strong> ${report.total_amount}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ 
+                    width: '8px', 
+                    height: '8px', 
+                    background: '#52c41a', 
+                    borderRadius: '50%' 
+                  }}></span>
+                  <strong>Total Amount:</strong> ${report.total_amount}
                 </div>
-                <div>
-                  <strong>报告生成时间:</strong> {new Date(report.report_date).toLocaleDateString()}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ 
+                    width: '8px', 
+                    height: '8px', 
+                    background: '#722ed1', 
+                    borderRadius: '50%' 
+                  }}></span>
+                  <strong>Report Generated:</strong> {new Date(report.report_date).toLocaleDateString()}
                 </div>
               </div>
             </div>
